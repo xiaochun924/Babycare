@@ -1,0 +1,44 @@
+# 在 push / PR / 手动触发时，用 macOS Runner 编译 Babycare（模拟器、免签名）
+name: iOS Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Babycare (Simulator)
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Toolchain
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Build
+        run: |
+          xcodebuild \
+            -project Babycare.xcodeproj \
+            -scheme Babycare \
+            -configuration Debug \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Upload App
+        uses: actions/upload-artifact@v4
+        with:
+          name: Babycare-simulator-app
+          path: build/Build/Products/Debug-iphonesimulator/*.app
+          if-no-files-found: error

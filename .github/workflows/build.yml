@@ -85,7 +85,7 @@ jobs:
       - name: 上传 IPA
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.project }}-unsigned-ipa
-          path: ${{ matrix.project }}-unsigned.ipa
+          name: ${{ matrix.project }}-ipa
+          path: ${{ matrix.project }}.ipa
           if-no-files-found: error
           retention-days: 30

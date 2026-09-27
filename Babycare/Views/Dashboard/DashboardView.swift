@@ -59,7 +59,7 @@ struct DashboardView: View {
             Text(baby?.avatarEmoji ?? "👶")
                 .font(.system(size: 44))
                 .frame(width: 64, height: 64)
-                .background(Circle().fill(Color.white))
+                .background(Circle().fill(Theme.card))
                 .shadow(color: Theme.cardShadow, radius: 6, y: 3)
             VStack(alignment: .leading, spacing: 2) {
                 Text(baby?.name ?? "宝宝")

@@ -28,7 +28,7 @@ struct SummaryCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: Theme.cardCorner).fill(Color.white))
+        .background(RoundedRectangle(cornerRadius: Theme.cardCorner).fill(Theme.card))
         .shadow(color: Theme.cardShadow, radius: 8, y: 4)
     }
 }

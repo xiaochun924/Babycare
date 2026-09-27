@@ -1,5 +1,4 @@
-# 在 push / PR / 手动触发时，用 macOS Runner 编译 Babycare（模拟器、免签名）
-name: iOS Build
+name: Babycare
 
 on:
   push:
@@ -8,37 +7,85 @@ on:
     branches: [main]
   workflow_dispatch:
 
-concurrency:
-  group: ios-build-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   build:
-    name: Build Babycare (Simulator)
-    runs-on: macos-15
+    name: Build ${{ matrix.project }}
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [Babycare]
+        scheme: [Babycare]
+
     steps:
-      - name: Checkout
+      - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: Show Toolchain
+      - name: 查看 Xcode 与 iOS SDK 版本
         run: |
           xcodebuild -version
-          swift --version
+          xcodebuild -showsdks | grep -i "ios" || true
 
-      - name: Build
+      - name: 安装 XcodeGen
         run: |
+          if ! command -v xcodegen >/dev/null 2>&1; then
+            brew install xcodegen
+          fi
+          xcodegen --version
+
+      - name: 生成 Xcode 工程
+        run: |
+          cd "${{ matrix.project }}"
+          xcodegen generate
+
+      - name: 编译
+        run: |
+          set -o pipefail
+          cd "${{ matrix.project }}"
           xcodebuild \
-            -project Babycare.xcodeproj \
-            -scheme Babycare \
-            -configuration Debug \
-            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -project "${{ matrix.project }}.xcodeproj" \
+            -scheme "${{ matrix.scheme }}" \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -configuration Release \
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
-            build
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            clean build
 
-      - name: Upload App
+      - name: 打包 IPA
+        run: |
+          cd "${{ matrix.project }}"
+          APP=$(find build -type d -name "*.app" | head -1)
+          if [ -z "$APP" ]; then
+            echo "未找到 .app 产物"; exit 1
+          fi
+          echo "产物: $APP"
+          rm -rf Payload && mkdir -p Payload
+          cp -r "$APP" Payload/
+          zip -qr "../${{ matrix.project }}.ipa" Payload
+          ls -lh "../${{ matrix.project }}.ipa"
+
+      - name: 发布
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd "${{ matrix.project }}"
+          IPA="../${{ matrix.project }}.ipa"
+          RELEASE_TAG="unsigned-ipa"
+          gh release delete "$RELEASE_TAG" --yes --cleanup-tag 2>/dev/null || true
+          gh release create "$RELEASE_TAG" \
+            --title "Babycare" \
+            --notes "自签版本" \
+            "$IPA"
+
+      - name: 上传 IPA
         uses: actions/upload-artifact@v4
         with:
-          name: Babycare-simulator-app
-          path: build/Build/Products/Debug-iphonesimulator/*.app
+          name: ${{ matrix.project }}-unsigned-ipa
+          path: ${{ matrix.project }}-unsigned.ipa
           if-no-files-found: error
+          retention-days: 30

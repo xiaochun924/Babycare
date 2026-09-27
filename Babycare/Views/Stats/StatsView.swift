@@ -109,7 +109,7 @@ struct StatsView: View {
             .frame(height: 220)
         }
         .padding(16)
-        .background(RoundedRectangle(cornerRadius: Theme.cardCorner).fill(Color.white))
+        .background(RoundedRectangle(cornerRadius: Theme.cardCorner).fill(Theme.card))
         .shadow(color: Theme.cardShadow, radius: 8, y: 4)
         .padding(.horizontal, 16)
     }
@@ -140,7 +140,7 @@ struct StatsView: View {
             }
         }
         .padding(16)
-        .background(RoundedRectangle(cornerRadius: Theme.cardCorner).fill(Color.white))
+        .background(RoundedRectangle(cornerRadius: Theme.cardCorner).fill(Theme.card))
         .shadow(color: Theme.cardShadow, radius: 8, y: 4)
         .padding(.horizontal, 16)
     }

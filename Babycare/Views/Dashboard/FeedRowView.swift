@@ -31,7 +31,7 @@ struct FeedRowView: View {
                 .foregroundStyle(.secondary)
         }
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: Theme.cardCorner).fill(Color.white))
+        .background(RoundedRectangle(cornerRadius: Theme.cardCorner).fill(Theme.card))
         .shadow(color: Theme.cardShadow, radius: 6, y: 3)
     }
 }

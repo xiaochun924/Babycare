@@ -108,9 +108,23 @@ struct DashboardView: View {
             if todayRecords.isEmpty {
                 EmptyStateView(onAdd: { showAddFeed = true })
             } else {
-                ForEach(todayRecords) { record in
+                ForEach(Array(todayRecords.prefix(7))) { record in
                     FeedRowView(record: record)
                 }
+                NavigationLink {
+                    HistoryView()
+                } label: {
+                    HStack {
+                        Text(todayRecords.count > 7 ? "还有 \(todayRecords.count - 7) 条记录" : "查看全部历史记录")
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .foregroundStyle(Theme.peach)
+                    .padding(.top, 4)
+                }
+                .buttonStyle(.plain)
             }
         }
     }
